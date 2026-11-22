@@ -6,7 +6,7 @@ You hand Carson a document: a bill, a letter, an insurance policy, a photo of so
 
 Carson is built for people who are comfortable with email and a web browser and not much else. It asks one question at a time, in plain words.
 
-**Status: early test build (0.12.0).** This version covers setup, filing, the daily and weekly routines, Carson's Desk, and a household budget. Keeping the papers in Google Drive, so that Carson works from a phone with no computer left on, is in its first experimental build. Shared households are planned.
+**Status: early test build (0.13.0).** This version covers setup, filing, the daily and weekly routines, Carson's Desk, and a household budget. Keeping the papers in Google Drive, so that Carson works from a phone with no computer left on, is in its first experimental build. Shared households are planned.
 
 ## What Carson does
 
