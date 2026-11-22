@@ -1,0 +1,14 @@
+{
+  "name": "carson",
+  "description": "Carson, a household filing and admin assistant for Claude.",
+  "owner": {
+    "name": "Amy E. Tabor"
+  },
+  "plugins": [
+    {
+      "name": "carson",
+      "source": "./",
+      "description": "A household filing and admin assistant for people who would rather not think about paperwork."
+    }
+  ]
+}
