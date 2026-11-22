@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" data-palette="navy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carson's Budget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bitter:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one calm column of large, plainly labeled panels; "needs you" first, reference last. Two columns only on wide screens. */
+:root {
+  --paper: #e4d5c1;
+  --panel: #ffffff;
+  --ink: #17231f;
+  --muted: #55645e;
+  --line: #d2c3ae;
+  --accent: #1f5c4a;
+  --accent-soft: #e2efe9;
+  --warn: #8a5a00;
+  --warn-soft: #fbefd2;
+  --late: #a3271b;
+  --late-soft: #fbe3df;
+  --good: #2c6e49;
+  --good-soft: #dff0e5;
+  --quill: #6b1626;
+  --quill-soft: #e9cdd2;
+  --display: "Bitter", Georgia, "Times New Roman", serif;
+  --body: "Atkinson Hyperlegible", Verdana, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1d1510; --panel: #2a1f18; --ink: #eef3f0; --muted: #a6b5ae; --line: #45362b;
+    --accent: #7fd0b3; --accent-soft: #223c33; --warn: #f0c36a; --warn-soft: #3d3215; --late: #ff9f93; --late-soft: #45211c; --good: #8fd3a8; --good-soft: #1f3a2a; --quill: #e08a9a; --quill-soft: #4d1f29;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #1d1510; --panel: #2a1f18; --ink: #eef3f0; --muted: #a6b5ae; --line: #45362b;
+  --accent: #7fd0b3; --accent-soft: #223c33; --warn: #f0c36a; --warn-soft: #3d3215; --late: #ff9f93; --late-soft: #45211c; --good: #8fd3a8; --good-soft: #1f3a2a; --quill: #e08a9a; --quill-soft: #4d1f29;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 19px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 28px 20px 56px; display: flex; flex-direction: column; gap: 22px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
+.quill { flex: none; margin-right: -6px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 2.1rem; margin: 0; text-wrap: balance; }
+.today { color: var(--muted); font-size: 1.05rem; }
+.sample { margin-left: auto; font-size: 0.85rem; font-weight: 700; color: var(--warn); background: var(--warn-soft); border-radius: 999px; padding: 4px 14px; }
+.summary { background: var(--accent-soft); border-left: 6px solid var(--accent); border-radius: 8px; padding: 16px 20px; font-size: 1.2rem; }
+.summary strong { font-family: var(--display); }
+.grid { display: grid; gap: 22px; grid-template-columns: 1fr; }
+@media (min-width: 880px) { .grid { grid-template-columns: 3fr 2fr; align-items: start; } }
+.col { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; }
+h2 { font-family: var(--display); font-weight: 700; font-size: 1.35rem; margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.count { font-family: var(--body); font-size: 0.95rem; font-weight: 400; color: var(--muted); }
+.hint { color: var(--muted); font-size: 0.95rem; margin: 0 0 12px; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+li { padding: 13px 0; border-top: 1px solid var(--line); display: flex; gap: 14px; align-items: flex-start; }
+li:first-child { border-top: 0; }
+.main { flex: 1; min-width: 0; }
+.title { font-weight: 700; overflow-wrap: anywhere; }
+.meta { color: var(--muted); font-size: 0.93rem; display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 2px; }
+.when { flex: none; width: 5.6em; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+.chip { flex: none; font-size: 0.85rem; font-weight: 700; border-radius: 999px; padding: 3px 12px; white-space: nowrap; background: var(--accent-soft); color: var(--accent); }
+.chip.soon { background: var(--warn-soft); color: var(--warn); }
+.chip.late { background: var(--late-soft); color: var(--late); }
+.filters { display: flex; flex-wrap: wrap; gap: 12px 18px; margin: 6px 0 8px; }
+.filters label { display: flex; flex-direction: column; gap: 3px; font-size: 0.9rem; color: var(--muted); }
+select { font: inherit; font-size: 1rem; color: var(--ink); background: var(--panel); border: 2px solid var(--line); border-radius: 8px; padding: 8px 12px; min-width: 11em; }
+input[type="checkbox"] { flex: none; width: 30px; height: 30px; margin: 2px 0 0; accent-color: var(--accent); cursor: pointer; }
+li.done .title { text-decoration: line-through; color: var(--muted); font-weight: 400; }
+li.done .chip { display: none; }
+label.row { display: flex; gap: 14px; align-items: flex-start; flex: 1; min-width: 0; cursor: pointer; }
+.empty { color: var(--muted); padding: 10px 0; border-top: 0; }
+[hidden] { display: none !important; }
+.answer { display: flex; gap: 10px; flex: none; }
+button { font: inherit; font-weight: 700; font-size: 1rem; border-radius: 8px; padding: 9px 20px; min-width: 4.4em; cursor: pointer; }
+button.yes { background: var(--accent); color: var(--panel); border: 2px solid var(--accent); }
+button.no { background: var(--panel); color: var(--ink); border: 2px solid var(--line); }
+.result { flex: none; font-weight: 700; color: var(--muted); }
+#waiting li { flex-wrap: wrap; }
+footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--line); padding-top: 16px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 480px) { body { font-size: 18px; } .sample { margin-left: 0; } .when { width: 4.6em; } }
+
+/* Approved scheme (2026-11-21): navy accent and quill on light brown paper. */
+:root[data-palette="navy"] { --paper: #e8e0d2; --line: #d3c8b6; --accent: #1f3a5f; --accent-soft: #dfe7f1; --quill: #1f3a5f; --quill-soft: #dfe7f1; --late: #a3271b; --late-soft: #fbe3df; }
+@media (prefers-color-scheme: dark) { :root[data-palette="navy"]:not([data-theme="light"]) { --paper: #1d1510; --line: #45362b; --accent: #a3c0ea; --accent-soft: #22324a; --quill: #a3c0ea; --quill-soft: #22324a; --late: #ff9f93; --late-soft: #45211c; --good: #8fd3a8; --good-soft: #1f3a2a; } }
+:root[data-theme="dark"][data-palette="navy"] { --paper: #1d1510; --line: #45362b; --accent: #a3c0ea; --accent-soft: #22324a; --quill: #a3c0ea; --quill-soft: #22324a; --late: #ff9f93; --late-soft: #45211c; --good: #8fd3a8; --good-soft: #1f3a2a; }
+.controls { display: flex; flex-direction: column; gap: 18px; align-items: flex-start; }
+.controls label { display: flex; flex-direction: column; gap: 3px; font-size: 0.9rem; color: var(--muted); }
+.toggle { display: flex; gap: 0; }
+.toggle button { border-radius: 0; background: var(--panel); color: var(--ink); border: 2px solid var(--line); min-width: 7em; }
+.toggle button:first-child { border-radius: 8px 0 0 8px; border-right: 0; }
+.toggle button:last-child { border-radius: 0 8px 8px 0; }
+.toggle button[aria-pressed="true"] { background: var(--accent); color: var(--panel); border-color: var(--accent); }
+.strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.cell-label { font-size: 0.82rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.cell-val { font-family: var(--display); font-weight: 700; font-size: 1.45rem; font-variant-numeric: tabular-nums; }
+.cell-sub { font-size: 0.85rem; color: var(--muted); }
+.note { color: var(--muted); font-size: 0.95rem; margin: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 0.9rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; background: var(--good); }
+.dot.soon { background: var(--warn); } .dot.late { background: var(--late); } .dot.none { background: var(--line); }
+.group-title { font-family: var(--display); font-weight: 700; font-size: 1.3rem; margin: 6px 0 10px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+.card { background: var(--panel); border: 1px solid var(--line); border-left: 6px solid var(--good); border-radius: 10px; padding: 0; }
+.card.soon { border-left-color: var(--warn); } .card.late { border-left-color: var(--late); } .card.none { border-left-color: var(--line); }
+.card-btn { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 14px 16px 12px; color: inherit; font: inherit; font-weight: 400; cursor: pointer; min-width: 0; border-radius: 10px; }
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+.card-name { font-weight: 700; font-size: 1.08rem; overflow-wrap: anywhere; }
+.pill { flex: none; font-size: 0.78rem; font-weight: 700; border-radius: 999px; padding: 3px 11px; white-space: nowrap; background: var(--good-soft); color: var(--good); }
+.pill.soon { background: var(--warn-soft); color: var(--warn); } .pill.late { background: var(--late-soft); color: var(--late); } .pill.none { background: var(--paper); color: var(--muted); }
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin-bottom: 4px; }
+.metric { display: flex; flex-direction: column; }
+.metric-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.metric-val { font-variant-numeric: tabular-nums; font-weight: 700; }
+.neg { color: var(--late); } .pos { color: var(--good); }
+.progress { position: relative; height: 10px; background: var(--line); border-radius: 5px; margin-top: 10px; }
+.progress > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--good); }
+.progress.soon > span { background: var(--warn); } .progress.late > span { background: var(--late); } .progress.none > span { background: var(--muted); }
+.progress > i { position: absolute; top: -3px; bottom: -3px; width: 3px; background: var(--ink); opacity: 0.7; }
+.progress-meta { display: flex; justify-content: space-between; gap: 10px; font-size: 0.82rem; color: var(--muted); margin-top: 5px; }
+.hint-line { font-size: 0.85rem; color: var(--accent); font-weight: 700; text-align: center; margin-top: 8px; }
+.details { border-top: 1px solid var(--line); padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 12px; }
+.details h3 { font-size: 0.82rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 6px; font-family: var(--body); }
+.explain { font-size: 0.95rem; background: var(--paper); border-radius: 8px; padding: 10px 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 400; padding: 4px 6px 4px 0; border-bottom: 1px solid var(--line); }
+td { padding: 5px 6px 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+th.r, td.r { text-align: right; padding-right: 0; white-space: nowrap; }
+tr.total td { border-bottom: 0; font-weight: 700; }
+.acct { color: var(--muted); font-size: 0.82rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg class="quill" viewBox="0 0 64 64" width="60" height="60" aria-hidden="true">
+      <path d="M52 5 C33 7 19 21 15 43 L21 44 C33 39 46 27 52 5 Z" fill="var(--quill-soft)" stroke="var(--quill)" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M49 9 C37 21 25 35 11 57" fill="none" stroke="var(--quill)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M40 13 L36 23 M45 19 L30 30 M41 29 L24 38" fill="none" stroke="var(--quill)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M5 60 C14 55 21 63 33 58" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <h1>Carson's Budget</h1>
+    <span class="today" id="period"></span>
+    <span class="sample" id="stale" hidden></span>
+  </header>
+
+  <div class="controls">
+    <div class="toggle" role="group" aria-label="Choose a view">
+      <button type="button" id="v-month" aria-pressed="true">One month</button>
+      <button type="button" id="v-year" aria-pressed="false">The year</button>
+    </div>
+    <label for="pick" id="pick-label">Month
+      <select id="pick"></select>
+    </label>
+  </div>
+
+  <p class="note" id="note">Opening your budget…</p>
+  <div class="strip" id="strip" hidden></div>
+  <div class="legend" id="legend" hidden>
+    <span><i class="dot"></i> On track (up to 100% used)</span>
+    <span><i class="dot soon"></i> Slightly over (100 to 105%)</span>
+    <span><i class="dot late"></i> Over (above 105%)</span>
+    <span><i class="dot none"></i> No budget</span>
+  </div>
+
+  <div class="col" id="body"></div>
+
+  <footer><span id="updated"></span> Carson organizes and summarizes. It is not a financial adviser. Check these figures against your statements.</footer>
+</div>
+
+<script>
+// Carson's Budget. Every figure on this page is worked out by Carson and stored in this page's own database.
+const el = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const usd = n => { const v = Number(n) || 0; return (v < 0 ? "-" : "") + "$" + Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+const usd0 = n => { const v = Math.round(Number(n) || 0); return (v < 0 ? "-" : "") + "$" + Math.abs(v).toLocaleString(); };
+function monthName(id, style) { const m = /^(\d{4})-(\d{2})/.exec(id || ""); if (!m) return id || ""; const d = new Date(Number(m[1]), Number(m[2]) - 1, 1); return style === "short" ? d.toLocaleDateString(undefined, { month: "short" }) : style === "plain" ? d.toLocaleDateString(undefined, { month: "long" }) : d.toLocaleDateString(undefined, { month: "long", year: "numeric" }); }
+function dayLabel(d) { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || ""); return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : ""; }
+function prevMonth(id) { const m = /^(\d{4})-(\d{2})/.exec(id || ""); if (!m || m[2] === "01") return ""; return m[1] + "-" + String(Number(m[2]) - 1).padStart(2, "0"); }
+
+const S = { meta: null, view: "month", month: "", doc: null, year: null, open: new Set() };
+let db = null;
+
+// Up to 100% of what was available is on track, to 105% slightly over, above that over.
+function status(spent, available) {
+  if (available <= 0 && spent <= 0) return { cls: "none", word: "No budget" };
+  if (available <= 0) return { cls: "late", word: "Over" };
+  const r = spent / available;
+  return r <= 1 ? { cls: "", word: "On track" } : r <= 1.05 ? { cls: "soon", word: "Slightly over" } : { cls: "late", word: "Over" };
+}
+const pct = (a, b) => b > 0 ? Math.max(0, Math.min(100, (a / b) * 100)) : (a > 0 ? 100 : 0);
+const pctUsed = (a, b) => b > 0 ? Math.round((a / b) * 100) : (a > 0 ? 100 : 0);
+const cell = (label, val, sub, cls) => '<div><div class="cell-label">' + esc(label) + '</div><div class="cell-val ' + (cls || "") + '">' + esc(val) + '</div><div class="cell-sub">' + esc(sub) + '</div></div>';
+const metric = (label, val, cls) => '<div class="metric"><span class="metric-label">' + esc(label) + '</span><span class="metric-val ' + (cls || "") + '">' + esc(val) + '</span></div>';
+
+function groups(cats) {
+  const out = [], seen = {};
+  cats.forEach(c => { const g = c.group || "Other"; if (!seen[g]) { seen[g] = { name: g, cats: [] }; out.push(seen[g]); } seen[g].cats.push(c); });
+  return out;
+}
+
+function rolloverText(c, month) {
+  const prev = prevMonth(month), mon = monthName(month, "plain");
+  if (!c.rollover) return "This category does not carry money over from month to month.";
+  if (!prev || !c.prior) return "This is the first month of the year, so nothing is carried over yet.";
+  const p = c.prior, pn = monthName(prev, "plain");
+  if (!p.budget && !p.actual && !p.rollin) return "No budget or spending in " + pn + ". Carried over: " + usd(c.rollin) + ".";
+  return "In " + pn + ": carried over " + usd(p.rollin) + ", budget " + usd(p.budget) + ", spent " + usd(p.actual) + ". That left " +
+    (p.left >= 0 ? "a surplus of " + usd(p.left) + ", carried forward into " + mon + "." : "a shortfall of " + usd(-p.left) + ", carried into " + mon + " as a deficit.");
+}
+
+function txTable(items, income, emptyText) {
+  if (!items.length) return '<div class="explain">' + esc(emptyText) + '</div>';
+  let total = 0;
+  const rows = items.map(t => { const a = income ? t.amt : -t.amt; total += a;
+    return '<tr><td>' + esc(dayLabel(t.d)) + '</td><td>' + esc(t.desc) + (t.g ? '<br><span class="acct">Carson\'s guess</span>' : "") + '</td><td class="r">' + esc(usd(a)) + '</td></tr>'; }).join("");
+  return '<table><thead><tr><th>Date</th><th>Description</th><th class="r">Amount</th></tr></thead><tbody>' + rows +
+    '<tr class="total"><td></td><td class="r">Total:</td><td class="r">' + esc(usd(total)) + '</td></tr></tbody></table>';
+}
+
+function renderMonth() {
+  const d = S.doc;
+  if (!d) { el("strip").hidden = true; el("legend").hidden = true; el("note").textContent = "Carson has no figures for this month yet."; el("body").innerHTML = ""; return; }
+  const cats = Array.isArray(d.categories) ? d.categories : [], tx = d.tx || {};
+  const mon = monthName(d.month, "short"), y = S.year;
+  const available = (Number(d.total_budget) || 0) + (Number(d.total_rollin) || 0);
+  const g = S.meta && Number(S.meta.guesses) || 0;
+  el("note").textContent = "Click any category to see what was carried over from last month and this month's purchases." + (d.partial ? " " + monthName(d.month, "plain") + " is not over yet." : "") +
+    (g ? " " + g + (g === 1 ? " transaction this year was sorted by Carson's guess." : " transactions this year were sorted by Carson's guess.") + " To check them, tell Carson: review your guesses." : "");
+  el("strip").hidden = false; el("legend").hidden = false;
+  el("strip").innerHTML =
+    cell(mon + " available", usd0(available), "Budget: " + usd0(d.total_budget) + " + carried over: " + usd0(d.total_rollin)) +
+    cell(mon + " spent", usd0(d.total_spent), pctUsed(d.total_spent, available) + "% of available") +
+    cell(mon + " left", usd0(d.total_left), "Carries to next month", d.total_left < 0 ? "neg" : "pos") +
+    (y ? cell("Spent this year", usd0(y.total_spent), "of " + usd0(y.total_to_date) + " planned so far (" + pctUsed(y.total_spent, y.total_to_date) + "%)") +
+         cell("Plan for the year", usd0(y.total_annual), usd0(y.total_left) + " left") : "");
+  el("body").innerHTML = groups(cats).map(g => '<div><div class="group-title">' + esc(g.name) + '</div><div class="cards">' + g.cats.map(c => {
+    const income = c.kind === "income";
+    const avail = (Number(c.rollin) || 0) + (Number(c.budget) || 0);
+    const s = (c.name === "Uncategorized" || c.name === "Money in, not sorted") ? { cls: "soon", word: "Needs sorting" } : income ? { cls: "none", word: "Income" } : status(c.actual, avail);
+    const items = Array.isArray(tx[c.name]) ? tx[c.name] : [];
+    const isOpen = S.open.has(c.name);
+    const metrics = income
+      ? metric("Expected", usd(c.budget)) + metric("Received", usd(c.actual))
+      : metric("Carried over", usd(c.rollin), c.rollin < 0 ? "neg" : "") + metric("Budget", usd(c.budget)) + metric("Spent", usd(c.actual)) + metric("Left", usd(c.left), c.left < 0 ? "neg" : "pos");
+    const base = income ? c.budget : avail;
+    return '<div class="card ' + s.cls + '">' +
+      '<button type="button" class="card-btn" data-cat="' + esc(c.name) + '" aria-expanded="' + isOpen + '">' +
+        '<div class="card-head"><span class="card-name">' + esc(c.name) + '</span><span class="pill ' + s.cls + '">' + esc(s.word) + '</span></div>' +
+        '<div class="metrics">' + metrics + '</div>' +
+        '<div class="progress ' + s.cls + '"><span style="width:' + pct(c.actual, base) + '%"></span></div>' +
+        '<div class="progress-meta"><span>' + pctUsed(c.actual, base) + '% of ' + (income ? "expected received" : "available used") + '</span><span>' + (S.meta && S.meta.detail === false ? "" : items.length + (income ? (items.length === 1 ? " deposit" : " deposits") : (items.length === 1 ? " purchase" : " purchases"))) + '</span></div>' +
+        '<div class="hint-line">' + (isOpen ? "Click to close" : "Click for details") + '</div>' +
+      '</button>' +
+      (isOpen ? '<div class="details">' +
+        (income ? "" : '<div><h3>Carried over from last month</h3><div class="explain">' + esc(rolloverText(c, d.month)) + '</div></div>') +
+        (S.meta && S.meta.detail === false ? "" : '<div><h3>' + esc(monthName(d.month)) + (income ? " deposits" : " purchases") + '</h3>' + txTable(items, income, "Nothing in " + monthName(d.month, "plain") + ".") + '</div>') +
+      '</div>' : "") +
+    '</div>';
+  }).join("") + '</div></div>').join("");
+}
+
+function renderYear() {
+  const y = S.year;
+  if (!y) { el("strip").hidden = true; el("legend").hidden = true; el("note").textContent = "Carson has no figures for the year yet."; el("body").innerHTML = ""; return; }
+  const cats = Array.isArray(y.categories) ? y.categories : [];
+  const onTrack = (Number(y.total_spent) || 0) <= (Number(y.total_to_date) || 0);
+  el("note").textContent = "Progress toward each category's plan for the whole year, and how much is left. Click any category for its month-by-month figures. The mark on each bar shows how far through the year we are.";
+  el("strip").hidden = false; el("legend").hidden = false;
+  el("strip").innerHTML =
+    cell("Plan for the year", usd0(y.total_annual), cats.filter(c => c.kind !== "income" && c.name !== "Uncategorized").length + " categories") +
+    cell("Spent this year", usd0(y.total_spent), pctUsed(y.total_spent, y.total_annual) + "% of the year's plan") +
+    cell("Left this year", usd0(y.total_left), "across all categories", y.total_left < 0 ? "neg" : "pos") +
+    cell("Year elapsed", Math.round(Number(y.year_elapsed) || 0) + "%", "through " + monthName(y.through)) +
+    cell("Pace", onTrack ? "On track" : "Ahead", usd0(y.total_spent) + " spent; " + usd0(y.total_to_date) + " planned by now", onTrack ? "pos" : "neg");
+  const mark = Math.max(0, Math.min(100, Number(y.year_elapsed) || 0));
+  el("body").innerHTML = groups(cats).map(g => '<div><div class="group-title">' + esc(g.name) + '</div><div class="cards">' + g.cats.map(c => {
+    const income = c.kind === "income";
+    const s = (c.name === "Uncategorized" || c.name === "Money in, not sorted") ? { cls: "soon", word: "Needs sorting" } : income ? { cls: "none", word: "Income" } : status(c.spent, c.annual);
+    const isOpen = S.open.has("y:" + c.name);
+    const months = Array.isArray(c.months) ? c.months : [];
+    return '<div class="card ' + s.cls + '">' +
+      '<button type="button" class="card-btn" data-cat="y:' + esc(c.name) + '" aria-expanded="' + isOpen + '">' +
+        '<div class="card-head"><span class="card-name">' + esc(c.name) + '</span><span class="pill ' + s.cls + '">' + esc(s.word) + '</span></div>' +
+        '<div class="metrics">' + metric(income ? "Expected this year" : "Plan for the year", usd0(c.annual)) + metric(income ? "Received so far" : "Spent this year", usd0(c.spent)) +
+          (income ? "" : metric("Left this year", usd0(c.left), c.left < 0 ? "neg" : "pos") + metric("Planned by now", usd0(c.to_date))) + '</div>' +
+        '<div class="progress ' + s.cls + '"><span style="width:' + pct(c.spent, c.annual) + '%"></span><i style="left:calc(' + mark + '% - 1px)"></i></div>' +
+        '<div class="progress-meta"><span>' + pctUsed(c.spent, c.annual) + '% of the year\'s plan ' + (income ? "received" : "used") + '</span><span>year ' + Math.round(mark) + '% gone</span></div>' +
+        '<div class="hint-line">' + (isOpen ? "Click to close" : "Click for month by month") + '</div>' +
+      '</button>' +
+      (isOpen ? '<div class="details"><table><thead><tr><th>Month</th><th class="r">Budget</th><th class="r">' + (income ? "Received" : "Spent") + '</th><th class="r">' + (income ? "Difference" : "Left") + '</th></tr></thead><tbody>' +
+        months.map(m => '<tr><td>' + esc(monthName(m.m, "plain")) + '</td><td class="r">' + esc(usd0(m.budget)) + '</td><td class="r">' + esc(usd0(m.actual)) + '</td><td class="r ' + ((income ? -m.left : m.left) < 0 ? "neg" : "") + '">' + esc(usd0(income ? -m.left : m.left)) + '</td></tr>').join("") +
+        '</tbody></table></div>' : "") +
+    '</div>';
+  }).join("") + '</div></div>').join("");
+}
+
+function render() {
+  el("v-month").setAttribute("aria-pressed", String(S.view === "month"));
+  el("v-year").setAttribute("aria-pressed", String(S.view === "year"));
+  el("pick-label").hidden = S.view !== "month";
+  el("period").textContent = S.view === "month" ? monthName(S.month) : (S.meta ? String(S.meta.year) : "");
+  if (S.view === "month") renderMonth(); else renderYear();
+}
+
+async function loadMonth(id) {
+  S.month = id; S.doc = null;
+  try { const snap = await db.doc("months/" + id).get(); S.doc = snap.exists ? snap.data() : null; } catch (e) { S.doc = null; }
+  render();
+}
+async function loadYear() {
+  try { const snap = await db.doc("years/" + S.meta.year).get(); S.year = snap.exists ? snap.data() : null; } catch (e) { S.year = null; }
+  render();
+}
+
+el("v-month").addEventListener("click", () => { S.view = "month"; render(); });
+el("v-year").addEventListener("click", () => { S.view = "year"; render(); });
+el("pick").addEventListener("change", e => { S.open = new Set(); loadMonth(e.target.value); });
+el("body").addEventListener("click", e => {
+  const b = e.target.closest("button[data-cat]");
+  if (!b) return;
+  const c = b.dataset.cat; if (S.open.has(c)) S.open.delete(c); else S.open.add(c);
+  render();
+});
+
+(async () => {
+  try { db = await window.claude.use("db"); } catch (e) { db = null; }
+  if (!db) { el("note").textContent = "Your budget can't be opened here. Open this page inside Claude while signed in."; return; }
+  let ready = false;
+  const slow = setTimeout(() => { if (!ready) el("note").textContent = "Still fetching your budget. If this stays, check your connection."; }, 10000);
+  db.doc("budget/meta").onSnapshot(async snap => {
+    clearTimeout(slow);
+    if (!snap.exists) { el("note").textContent = "Carson hasn't filled in your budget yet. Tell Carson: update my budget."; return; }
+    ready = true; S.meta = snap.data();
+    const months = Array.isArray(S.meta.months) ? S.meta.months : [];
+    el("pick").innerHTML = months.slice().reverse().map(m => '<option value="' + esc(m) + '">' + esc(monthName(m)) + '</option>').join("");
+    const keep = months.includes(S.month) ? S.month : months[months.length - 1];
+    el("pick").value = keep || "";
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(S.meta.updated_on || "");
+    if (m) {
+      const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      el("updated").textContent = "Last updated by Carson " + d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }) + ".";
+      const old = (Date.now() - d.getTime()) > 10 * 86400000;
+      el("stale").hidden = !old; if (old) el("stale").textContent = "May be out of date. Tell Carson: update my budget";
+    }
+    await loadYear();
+    if (keep) await loadMonth(keep);
+  }, () => { clearTimeout(slow); if (!ready) el("note").textContent = "Your budget can't be reached right now. Please try again later."; });
+})();
+</script>
+</body>
+</html>
