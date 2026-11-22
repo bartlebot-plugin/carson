@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.14.1 — 2026-11-22
+
+- Weekly goals: a goal can be tied to a repeating Todoist task. Each tick of that task fills a box on the Desk, so nothing is recorded twice. Taps still count as well.
+
 ## 0.14.0 — 2026-11-22
 
 - Desk: each person chooses which sections show. "To do" and "Waiting for your answer" always show; today and tomorrow, coming dates, filed this week, and goals are choices.

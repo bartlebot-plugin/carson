@@ -9,7 +9,7 @@ description: >
   first-time setup interview that creates the Carson folder, reopens it later to
   change any choice, and pauses or stops Carson when asked.
 metadata:
-  version: "0.14.0"
+  version: "0.14.1"
 ---
 
 # Setup

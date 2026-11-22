@@ -200,7 +200,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
     <div class="col" id="col-side">
       <section aria-labelledby="h-goals" id="s-goals" hidden>
         <h2 id="h-goals">This week's goals <span class="count" id="goals-count"></span></h2>
-        <p class="hint">Tap a box when you've done one. Tap a filled box to undo it.</p>
+        <p class="hint" id="goals-hint">Tap a box when you've done one. Tap a filled box to undo it.</p>
         <ul id="goals"></ul>
         <p class="goalnote" id="goals-note" role="status"></p>
       </section>
@@ -246,7 +246,7 @@ const fmtShort = d => d.toLocaleDateString(undefined, { month: "short", day: "nu
 const weekEnd = () => (7 - new Date().getDay()) % 7;
 const todayIso = () => { const d = today0(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
 
-const S = { meta: null, todos: [], all: [], events: [], dates: [], filed: [], waiting: [], book: [], goals: [], goalLog: [], todoNote: "", ready: false, view: "desk", editing: "", removing: "", dirty: false, dEditing: "", dRemoving: "" };
+const S = { meta: null, todos: [], all: [], events: [], dates: [], filed: [], waiting: [], book: [], goals: [], goalLog: [], goalDone: {}, goalNote: "", todoNote: "", ready: false, view: "desk", editing: "", removing: "", dirty: false, dEditing: "", dRemoving: "" };
 let db = null, mcp = null, todoistWatch = null;
 
 function shortOf(t) { return t.short || String(t.title || "").split(",")[0].replace(/^(pay|call|book|sign and return|renew|gather|send|schedule)\s+/i, "").toLowerCase(); }
@@ -370,12 +370,33 @@ function goalMarks(goalId) {
   return S.goalLog.filter(x => x.goal === goalId && x.removed !== true && typeof x.day === "string" && x.day >= from)
     .sort((a, b) => String(a.at || a.day).localeCompare(String(b.at || b.day)));
 }
+// A goal can be tied to a recurring Todoist task; each time that task is ticked in Todoist this week counts as one.
+function goalFromTodoist(goalId) { return (S.goalDone[goalId] || []).length; }
+let goalWatches = {};
+function watchGoalTasks() {
+  if (!mcp || !S.meta || !wants("goals")) return;
+  const server = S.meta.todoist_server || "Todoist";
+  const d = new Date(weekStart() + "T00:00:00");
+  S.goals.forEach(g => {
+    const taskId = String(g.todoist_task_id || "");
+    const key = g.id + ":" + taskId + ":" + weekStart();
+    if (!taskId || goalWatches[key]) return;
+    goalWatches[key] = mcp.watchTool(server, "find-activity", { objectType: "task", eventType: "completed", objectId: taskId, dateFrom: d.toISOString(), limit: 50 }, ev => {
+      if (ev.type === "error") { S.goalNote = "Your Todoist ticks can't be counted right now. You can still tap the boxes." + detail(ev.error); renderGoals(); return; }
+      const p = ev.result && ev.result.payload;
+      const events = p && Array.isArray(p.events) ? p.events : [];
+      const from = weekStart();
+      S.goalDone[g.id] = events.filter(x => x && x.eventType === "completed" && String(x.objectId) === taskId && x.eventDate && localDay(new Date(x.eventDate)) >= from).map(x => String(x.id));
+      S.goalNote = ""; renderGoals();
+    }, { refetchInterval: 120000 });
+  });
+}
 function renderGoals() {
   if (!wants("goals")) return;
   const goals = S.goals.filter(g => g.name && Number(g.target) > 0).sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0) || String(a.name).localeCompare(String(b.name)));
   let done = 0, total = 0;
   el("goals").innerHTML = goals.length ? goals.map(g => {
-    const target = Math.min(14, Math.round(Number(g.target))), n = goalMarks(g.id).length;
+    const target = Math.min(14, Math.round(Number(g.target))), n = goalMarks(g.id).length + goalFromTodoist(g.id);
     done += Math.min(n, target); total += target;
     let boxes = "";
     for (let i = 0; i < target; i++) {
@@ -385,11 +406,12 @@ function renderGoals() {
     return '<li><span class="gname">' + esc(g.name) + '</span><span class="boxes">' + boxes + '</span><span class="gcount">' + n + " of " + target + '</span></li>';
   }).join("") : '<li class="empty">No goals yet. Tell Carson what you would like to do each week.</li>';
   el("goals-count").textContent = total ? done + " of " + total : "";
+  if (goals.some(g => g.todoist_task_id)) el("goals-hint").textContent = "Tick the task in Todoist and a box fills here, or tap a box yourself. Tap a filled box to undo a tap.";
   const left = (7 - new Date().getDay()) % 7 + 1;
   const note = el("goals-note");
   const met = total > 0 && done >= total;
   note.classList.toggle("met", met);
-  note.textContent = !total ? "" : met ? "All done for the week." : (total - done) + " to go. " + (left === 1 ? "Today is the last day of the week." : left + " days left this week, counting today.");
+  note.textContent = S.goalNote ? S.goalNote : !total ? "" : met ? "All done for the week." : (total - done) + " to go. " + (left === 1 ? "Today is the last day of the week." : left + " days left this week, counting today.");
 }
 async function tapGoal(goalId, on) {
   try {
@@ -398,6 +420,7 @@ async function tapGoal(goalId, on) {
       const last = marks[marks.length - 1];
       // Marked as removed, not erased, so Carson can take it out of the record at its next refresh.
       if (last) await db.doc("goal_log/" + last.id).update({ removed: true, changed_at: stamp() });
+      else { el("goals-note").classList.remove("met"); el("goals-note").textContent = "That one was ticked in Todoist. To undo it, un-tick the task there."; }
     } else {
       const id = "u-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       await db.doc("goal_log/" + id).set({ goal: goalId, day: localDay(new Date()), by: "user", at: stamp() });
@@ -770,7 +793,7 @@ el("today").textContent = new Date().toLocaleDateString(undefined, { weekday: "l
     if (S.meta.todo_app === "todoist") {
       let why = null;
       if (!mcp) { try { mcp = await window.claude.use("mcp"); } catch (e) { mcp = null; why = e; } }
-      if (mcp) { try { startTodoist(); } catch (e) { S.todoNote = "Your Todoist tasks can't be shown in this view." + detail(e); } }
+      if (mcp) { try { startTodoist(); } catch (e) { S.todoNote = "Your Todoist tasks can't be shown in this view." + detail(e); } try { watchGoalTasks(); } catch (e) {} }
       else { S.todoNote = "Your Todoist tasks can't be shown in this view." + (detail(why) || " (Detail: connectors unavailable)"); }
     } else if (S.meta.todo_app === "list" && !listSub) {
       listSub = db.collection("todos").onSnapshot(useListTodos, fail);
@@ -778,7 +801,7 @@ el("today").textContent = new Date().toLocaleDateString(undefined, { weekday: "l
     if (S.meta.calendar_app === "datebook" && !bookSub) bookSub = db.collection("book").onSnapshot(useBook, () => {});
     if (wants("goals") && !goalSub) {
       goalSub = true;
-      db.collection("goals").onSnapshot(snap => { S.goals = snap.docs.map(d => Object.assign({ id: d.id }, d.data() || {})); renderGoals(); }, () => {});
+      db.collection("goals").onSnapshot(snap => { S.goals = snap.docs.map(d => Object.assign({ id: d.id }, d.data() || {})); renderGoals(); try { watchGoalTasks(); } catch (e) {} }, () => {});
       db.collection("goal_log").onSnapshot(snap => { S.goalLog = snap.docs.map(d => Object.assign({ id: d.id }, d.data() || {})); renderGoals(); }, () => {});
     }
     renderTabs(); renderSections();

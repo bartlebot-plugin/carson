@@ -8,7 +8,7 @@ description: >
   Desk: a private page showing today's appointments, todos to tick off,
   suggestions to answer, coming dates, and recently filed documents.
 metadata:
-  version: "0.14.0"
+  version: "0.14.1"
 ---
 
 # Carson's Desk
@@ -39,7 +39,7 @@ Replacing or removing entries in the Desk's database is not deleting anything of
 1. Publish `desk-template.html` from this skill's folder, exactly as it is, as a new private page titled "Carson's Desk".
 2. Set the page's capabilities:
    - always `db`, with default rules;
-   - when the profile's `todos.app` is `todoist`, also `mcp` for the Todoist connector, limited to the two tools `find-tasks` and `complete-tasks`. Use the connector's display name exactly as it appears among the user's connectors.
+   - when the profile's `todos.app` is `todoist`, also `mcp` for the Todoist connector, limited to the two tools `find-tasks` and `complete-tasks`, and a third, `find-activity`, when any weekly goal is tied to a Todoist task (the page reads that task's ticks with it). If a goal is tied later, set the page's capabilities again with all three before refreshing; the user may be asked once more to allow the page to use Todoist. Use the connector's display name exactly as it appears among the user's connectors.
 3. Record the page's address in the profile as `desk.url`.
 4. Refresh it (below), so it never opens empty.
 5. Tell the user, briefly: "Your desk is ready. You can open it any time to see what's on, tick things off, and answer my suggestions." Suggest they keep it handy in whatever way their Claude app offers (a pin or favorite); do not invent menu names.
@@ -87,8 +87,8 @@ Write these, replacing what was there. Give each entry a stable id made from its
 | `waiting` | unanswered suggestion in `_system/pending.md` | `kind` (`todo` or `event`), `title`, `detail` ("Due by Tue, Dec 15"; for something another member offered, add "Offered by Pat"), `from`, `answer` (empty); for a todo, also `todo`: `title`, `short`, `due`, `project`, `who`, `from` |
 | `todos` | only when `todos.app` is `list`: every open todo, whatever its date, and each one done in the last 14 days. Nothing under "Removed" | `title`, `short`, `due` (YYYY-MM-DD or empty), `project`, `who`, `from`, `status` (`open` or `done`), `done_at`, and `was`: the `title` and `due` exactly as written now, so the line can be found again after the user edits the entry. Write no `changed_at`, `by`, or `removed`; those are the page's. Keep an entry's id the same from one refresh to the next, including ids the page made (they begin `u-`) |
 | `book` | only when `calendar.app` is `datebook`: every date in `_system/dates.md` dated today or later. Nothing under "Past," "Removed," "Moved to," or "Left here" | `day` (YYYY-MM-DD), `sort` ("14:30", or empty when there is no time), `time` ("2:30 pm", or empty), `title`, `short`, `where`, `from`, and `was`: the `day`, `sort`, and `title` exactly as written now. Write no `changed_at`, `by`, or `removed`. Keep an entry's id the same from one refresh to the next, including ids the page made (they begin `u-`). The page takes "Today and tomorrow" from these, so write no `events` |
-| `goals` | only when `goals` is among `desk.sections`: one per line under "Goals" in `_system/goals.md` | the document id is a short plain name for the goal that never changes ("cardio"); `name`, `target` (times a week, a number), `order` |
-| `goal_log` | only with goals: each Log line in `_system/goals.md` from this week | `goal` (the goal's document id), `day` (YYYY-MM-DD), `at` (the day again, or the time if known). Keep the ids of entries the page made (they begin `u-`); add entries only for Log lines the page does not already have. Write no `removed` or `by` |
+| `goals` | only when `goals` is among `desk.sections`: one per line under "Goals" in `_system/goals.md` | the document id is a short plain name for the goal that never changes ("cardio"); `name`, `target` (times a week, a number), `order`; and, for a goal tied to a Todoist task, `todoist_task_id` (the page then counts that task's ticks itself) |
+| `goal_log` | only with goals: each Log line in `_system/goals.md` from this week | `goal` (the goal's document id), `day` (YYYY-MM-DD), `at` (the day again, or the time if known). Keep the ids of entries the page made (they begin `u-`); add entries only for Log lines the page does not already have. Never add an entry for a Log line ending `via Todoist`; the page counts those from Todoist itself, and an entry would count it twice. Write no `removed` or `by` |
 
 **Which sections show.** `desk/meta` also carries `sections`: the list in the profile's `desk.sections`. "To do" and "Waiting for your answer" always show and are not in the list. The choices are `events` (today and tomorrow), `dates` (coming renewals and expirations), `filed` (filed this week), and `goals` (this week's goals). If the profile has no `desk.sections`, write `["events", "dates", "filed"]`. Do not write the collections for a section the user has turned off. When the user says "I don't need … on my desk" or "add … to my desk," change `desk.sections` and refresh.
 
