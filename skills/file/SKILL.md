@@ -57,6 +57,8 @@ Several pages or photos of one document are one item: file them together, and sa
 
 If an item is an exact copy of something already filed, do not file it again. Move it to `_processed/` and say it was already on file.
 
+**House procedures.** If the household has `_system/procedures.md`, check each item against it before going further. An item that a procedure claims is not filed the ordinary way; handle it as `<plugin root>/references/house-procedures.md` describes ("Filing").
+
 ## Step 4: File a renamed copy
 
 Find the destination from the "where things go" lines in the filing protocol, then file the item (files skill, "Naming files" and "Filing a document").

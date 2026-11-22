@@ -31,6 +31,8 @@ There are two kinds of storage. Work out which one this household uses before do
 
 **Shared households.** If the settings note says `household.mode: shared`, read `<plugin root>/references/shared-households.md` now (the plugin root is two levels above this skill's base directory) and follow it in every skill. It says how to tell which person this Carson is working for, which files are that person's own, and how things are offered to the others.
 
+**House procedures.** If the Carson folder has `_system/procedures.md`, the household has routines of its own that Carson runs. Read `<plugin root>/references/house-procedures.md` and that note now, and follow them in every skill: a matching file, question, or request is handled by the household's procedure, not the ordinary way.
+
 **One name can differ.** Wherever a Carson skill says `Reference/`, it means the folder named in the settings note's `storage.reference_name`. It is "Reference" unless the user already had a folder of that name when Carson was set up inside their own folders.
 
 **The user's own layout.** When the settings note says `storage.layout: own`, the topic folders are the user's, with their names and their arrangement. File new papers where the filing protocol says, and never move, rename, or change a file that was there before Carson.

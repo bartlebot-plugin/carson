@@ -39,6 +39,8 @@ If the Carson folder cannot be seen, write nothing, say so in one sentence, and 
 
 **When the household kept its own layout** (`storage.layout: own` in the settings note), papers that were there before Carson are not faults: skip checks 2, 3, and 4 for any file with no line in the log, and never list an old file's name or place as something to fix. Mention once, at most, how many papers have not been gone through, and that "go through my … folder" will note them.
 
+**House procedures.** Anything listed under "Leave alone" in `_system/procedures.md` belongs to the household's own routines: never list it, move it, or rename it.
+
 Do not open and reread every document. Work from names, the log, and the notes, and open a document only to settle a specific question.
 
 ## What tidy may fix by itself

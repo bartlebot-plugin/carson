@@ -27,6 +27,8 @@ What Carson may say: what was spent, what was planned, what is left, which categ
 
 ## Where the budget lives
 
+**A household with its own budget system.** If `_system/procedures.md` has a procedure that takes the place of Carson's budget, do not set up, offer, or update Carson's budget, and build no Budget page. Answer money questions by that procedure's steps file and the files it names (see `<plugin root>/references/house-procedures.md`).
+
 **In Drive mode** (the files skill says which mode the household uses), the budget is kept in a Google Sheet, and the Sheet adds up the transactions. Read `references/drive-budget.md` in this skill's folder now. It replaces this section, "Working out the figures," and the mechanics of "Carson's Budget (the page)"; everything else here applies unchanged, with "the transactions file" meaning the Sheet's Transactions tab and `category-rules.md` kept as a note in the usual way.
 
 **In folder mode,** the budget is kept in plain files:

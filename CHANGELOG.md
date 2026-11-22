@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.13.0 — 2026-11-22
+
+- House procedures: a household can list routines of its own (a weekly money check-in, a quarterly review, special handling for one kind of paper) in a note, and Carson runs them: when asked by name, on a schedule, or when a matching file arrives in the inbox. A procedure can take the place of part of Carson, such as its budget.
+
 ## 0.12.0 — 2026-11-22
 
 Shared households. Not yet tested.

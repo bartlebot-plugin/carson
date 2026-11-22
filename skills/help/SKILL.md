@@ -7,7 +7,7 @@ description: >
   questions about using Carson in plain words and points to the right thing to
   say.
 metadata:
-  version: "0.12.0"
+  version: "0.13.0"
 ---
 
 # Help
@@ -37,6 +37,7 @@ Read what the question needs before answering. Do not answer from memory of how 
   - Keep a budget: "Set up my budget."
   - Change how Carson works: "Set up Carson."
   - Bring in papers you already had: "Bring in my old papers," or "Go through my Insurance folder."
+  - Have Carson run a routine of your own: "Add a house procedure."
   - Share Carson with someone in your household: "Share Carson with Sam."
   - Take a break from Carson, or stop: "Pause Carson" or "Stop Carson."
 

@@ -24,6 +24,10 @@ Read `<plugin root>/references/house-rules.md` first (the plugin root is two lev
 - If one step fails, say which one in a sentence, and carry on with the next step.
 - The reply is what the user reads afterwards. Keep it short, and leave out any account of how the run went unless something failed.
 
+## A house procedure
+
+When the task says "Run Carson's house procedure named …": read `<plugin root>/references/house-procedures.md` and `_system/procedures.md`, find the entry with that name, and follow its steps file from start to finish. If the entry says it may not run on its own, do nothing but reply that it needs the user. If there is no such entry, or its steps file cannot be read, change nothing and say so. Afterwards refresh Carson's Desk if the profile has a `desk.url`, and reply with the procedure's own report.
+
 ## Morning routine
 
 1. Use the brief skill, following its instructions for a scheduled run: first put away anything waiting in the inbox folder and the email drop box, then gather.
@@ -39,7 +43,7 @@ Read `<plugin root>/references/house-rules.md` first (the plugin root is two lev
 
 1. Use the tidy skill, following its instructions for a scheduled run.
 2. Use the learn skill, following its instructions for a scheduled run.
-3. Only if the profile has `money.on: true`: use the money skill, following its instructions for a scheduled run, which updates Carson's Budget.
+3. Only if the profile has `money.on: true` and no house procedure takes the place of Carson's budget: use the money skill, following its instructions for a scheduled run, which updates Carson's Budget.
 4. Refresh Carson's Desk with the desk skill, if the profile has a `desk.url`.
 5. Reply with a short summary of each step that ran.
 
