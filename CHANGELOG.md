@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.14.2 — 2026-11-22
+
+- Desk: "This week's goals" sits in the main column, below the todos and any suggestions; today's events lead the side column again.
+
 ## 0.14.1 — 2026-11-22
 
 - Weekly goals: a goal can be tied to a repeating Todoist task. Each tick of that task fills a box on the Desk, so nothing is recorded twice. Taps still count as well.

@@ -195,16 +195,16 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
         <p class="hint">Things Carson suggests adding. Nothing is added until you say yes.</p>
         <ul id="waiting"></ul>
       </section>
-    </div>
 
-    <div class="col" id="col-side">
       <section aria-labelledby="h-goals" id="s-goals" hidden>
         <h2 id="h-goals">This week's goals <span class="count" id="goals-count"></span></h2>
         <p class="hint" id="goals-hint">Tap a box when you've done one. Tap a filled box to undo it.</p>
         <ul id="goals"></ul>
         <p class="goalnote" id="goals-note" role="status"></p>
       </section>
+    </div>
 
+    <div class="col" id="col-side">
       <section aria-labelledby="h-today" id="s-today">
         <h2 id="h-today">Today and tomorrow</h2>
         <ul id="events"></ul>
@@ -358,7 +358,7 @@ function wants(key) {
 }
 function renderSections() {
   [["goals", "s-goals"], ["events", "s-today"], ["dates", "s-dates"], ["filed", "s-filed"]].forEach(p => { el(p[1]).hidden = !wants(p[0]); });
-  const side = ["s-goals", "s-today", "s-dates", "s-filed"].some(id => !el(id).hidden);
+  const side = ["s-today", "s-dates", "s-filed"].some(id => !el(id).hidden);
   el("col-side").hidden = !side;
   el("desk-grid").classList.toggle("one", !side);
 }
