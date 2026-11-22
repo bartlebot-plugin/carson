@@ -1,3 +1,5 @@
+![Carson: keep your household files, calendars, and todos in proper order.](Carson-banner.png)
+
 # Carson
 
 A household filing and admin assistant for Claude, for people who would rather not think about paperwork.
@@ -37,7 +39,7 @@ Carson is built for people who are comfortable with email and a web browser and 
 
 ## Getting started
 
-1. Add the Carson plugin to Claude.
+1. Add the Carson plugin to Claude. The step-by-step guide is at https://bartlebot.com/carson/.
 2. Start a new conversation and choose your Carson folder.
 3. Type: `set up Carson`
 
