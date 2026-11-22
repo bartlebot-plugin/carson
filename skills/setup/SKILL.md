@@ -191,7 +191,7 @@ When the user says "stop Carson," "pause Carson," "turn Carson off," or asks how
 4. Set every entry in the profile's `routines` block to off, and record the date in `_system/settings.md` as `carson.stopped_on`, with `carson.stopped_how: paused` or `stopped`. Add a line to the log.
 5. **Only when stopping,** say what is left for them to do if they wish, and that none of it is required:
    - The Desk and the Budget page are private pages in their Claude account. They stay until the user deletes them; give their addresses.
-   - The plugin can be removed where they added it, under Customize, then Plugins.
+   - The plugin can be turned off or removed on Claude's Plugins page, where they added it. If they cannot find it in the app, it is listed at claude.ai in a web browser.
    - The contact named "Carson" in their address book, if they made one.
    - With Tiller or other apps connected for Carson alone, they can disconnect them in Claude's settings.
    - Their Carson folder is theirs to keep, move, or delete. The filed documents are ordinary files and need nothing from Carson to open.
