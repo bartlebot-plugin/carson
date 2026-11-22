@@ -8,7 +8,7 @@ description: >
   Desk: a private page showing today's appointments, todos to tick off,
   suggestions to answer, coming dates, and recently filed documents.
 metadata:
-  version: "0.14.2"
+  version: "0.14.3"
 ---
 
 # Carson's Desk

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.14.3 — 2026-11-22
+
+- Desk: on a phone, where everything is in one column, "This week's goals" comes last, after today's events.
+
 ## 0.14.2 — 2026-11-22
 
 - Desk: "This week's goals" sits in the main column, below the todos and any suggestions; today's events lead the side column again.

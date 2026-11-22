@@ -113,6 +113,8 @@ li.editing { display: block; }
 .goalnote { margin: 12px 0 0; color: var(--muted); }
 .goalnote.met { color: var(--accent); font-weight: 700; }
 .grid.one { grid-template-columns: 1fr; }
+/* In one column (a phone), the goals go last, after today's events. */
+@media (max-width: 879px) { #desk-grid > .col { display: contents; } #s-goals { order: 10; } }
 footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--line); padding-top: 16px; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 480px) { body { font-size: 18px; } .sample { margin-left: 0; } .when { width: 4.6em; } }
