@@ -29,6 +29,7 @@ Read only.
 - **Filed today:** today's lines in the log.
 - **Happened today:** today's events on the calendar or in the date book. Do not claim the user attended; say what was scheduled.
 - **Answered today:** suggestions the user said yes or no to (they will no longer be in `_system/pending.md`; count from the log where recorded, otherwise skip).
+- **Weekly goals, only if `_system/goals.md` has goals:** where the week stands, from the goals skill (`../goals/SKILL.md`). One line: what was logged today, if anything, and what is still needed with the days left. On the last day of the week, say plainly whether each goal was met; when all were, that belongs in the opening line about the day.
 - **Still open:** todos that were due today or earlier and are not done.
 - **Tomorrow:** tomorrow's events and todos due tomorrow.
 

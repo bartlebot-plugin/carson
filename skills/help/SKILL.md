@@ -7,7 +7,7 @@ description: >
   questions about using Carson in plain words and points to the right thing to
   say.
 metadata:
-  version: "0.13.0"
+  version: "0.14.0"
 ---
 
 # Help
@@ -17,7 +17,7 @@ Answer questions about how to use Carson, briefly and in plain words. The person
 ## Where the answers are
 
 1. `<plugin root>/README.md` (the plugin root is two levels above this skill's base directory): what Carson does and does not do.
-2. The other skills' files, for how a particular thing works: `../setup/`, `../file/`, `../tasks-and-dates/`, `../brief/`, `../review/`, `../tidy/`, `../learn/`, `../desk/`, `../money/`, `../routines/`, `../bring-in/`.
+2. The other skills' files, for how a particular thing works: `../setup/`, `../file/`, `../tasks-and-dates/`, `../brief/`, `../review/`, `../tidy/`, `../learn/`, `../desk/`, `../money/`, `../routines/`, `../bring-in/`, `../goals/`.
 3. In the user's Carson folder: `How to use Carson.md`, `_system/settings.md`, their profile in `_system/users/`, `_system/filing-protocol.md`, and `_system/preferences.md`, for how their own Carson is set up.
 
 Read what the question needs before answering. Do not answer from memory of how such tools usually work.
@@ -37,6 +37,8 @@ Read what the question needs before answering. Do not answer from memory of how 
   - Keep a budget: "Set up my budget."
   - Change how Carson works: "Set up Carson."
   - Bring in papers you already had: "Bring in my old papers," or "Go through my Insurance folder."
+  - Keep count of a weekly habit: "Track my workouts, three a week." Then tap a box on your Desk each time, or say "I did my cardio."
+  - Change what your Desk shows: "I don't need the filed list on my desk."
   - Have Carson run a routine of your own: "Add a house procedure."
   - Share Carson with someone in your household: "Share Carson with Sam."
   - Take a break from Carson, or stop: "Pause Carson" or "Stop Carson."

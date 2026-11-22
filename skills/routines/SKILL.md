@@ -39,6 +39,15 @@ When the task says "Run Carson's house procedure named …": read `<plugin root>
 1. Use the review skill. Change nothing.
 2. Reply with the evening review.
 
+## Midweek check
+
+For people who keep weekly goals. It speaks only when there is something to say.
+
+1. Use the goals skill's "Where the week stands." This carries any taps on the Desk into the record first.
+2. If nothing is behind, change nothing more and reply with exactly: "Nothing to report." Send no notification.
+3. If a goal is behind, reply in one or two plain sentences with the count and what is still possible this week, as the goals skill words it.
+4. Refresh Carson's Desk if the profile has a `desk.url`.
+
 ## Weekly routine
 
 1. Use the tidy skill, following its instructions for a scheduled run.

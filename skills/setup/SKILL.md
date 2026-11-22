@@ -9,7 +9,7 @@ description: >
   first-time setup interview that creates the Carson folder, reopens it later to
   change any choice, and pauses or stops Carson when asked.
 metadata:
-  version: "0.13.0"
+  version: "0.14.0"
 ---
 
 # Setup
@@ -164,6 +164,8 @@ When setup is already complete, ask: "What would you like to change?" and offer:
 - My routines (the morning briefing, the evening look back, the weekly check)
 - My desk (build it, if there isn't one yet)
 - My budget (handled by the money skill)
+- What my Desk shows (the desk skill, "Which sections show")
+- My weekly goals (the goals skill)
 - My house procedures: routines of my own that Carson should run (see `<plugin root>/references/house-procedures.md`, "Adding or changing one"; the note is made from the plugin template `procedures.md`)
 - Share Carson with someone in my household (the owner only)
 - Pause or stop Carson

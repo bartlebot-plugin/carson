@@ -8,12 +8,13 @@ You hand Carson a document: a bill, a letter, an insurance policy, a photo of so
 
 Carson is built for people who are comfortable with email and a web browser and not much else. It asks one question at a time, in plain words.
 
-**Status: early test build (0.13.0).** This version covers setup, filing, the daily and weekly routines, Carson's Desk, a household budget, papers kept either in Google Drive or in a folder on a computer, papers you already had, shared households, and house procedures. It has been tested by its author only; the newest parts have not yet been tried by other people. Expect rough edges.
+**Status: early test build (0.14.0).** This version covers setup, filing, the daily and weekly routines, Carson's Desk, a household budget, papers kept either in Google Drive or in a folder on a computer, papers you already had, shared households, and house procedures. It has been tested by its author only; the newest parts have not yet been tried by other people. Expect rough edges.
 
 ## What Carson does
 
 - **Works with the papers you already have.** Keep your own folders as they are, or let Carson organize them: it copies your papers into a tidy new folder and leaves your old folder untouched.
 - **Works for a household.** Each adult can run their own Carson on the same folder, with their own inbox, todos, briefings, and desk. Carson offers a family event to the others it concerns, and learns who wants to hear about what.
+- **Keeps count of weekly goals,** if you want it to: tap a box on your Desk each time you exercise, and Carson tells you midweek if you are behind.
 - **Sets itself up by interview.** Say "set up Carson" and answer about fifteen minutes of simple questions. Carson builds your folders around your household.
 - **Files your documents.** Attach a file or photo in the conversation, drop it in the inbox folder, or forward it to your own Carson email address (Gmail only for now).
 - **Keeps short notes.** One index note per topic, plus a summary beside each important document.

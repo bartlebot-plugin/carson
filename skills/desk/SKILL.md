@@ -8,7 +8,7 @@ description: >
   Desk: a private page showing today's appointments, todos to tick off,
   suggestions to answer, coming dates, and recently filed documents.
 metadata:
-  version: "0.10.0"
+  version: "0.14.0"
 ---
 
 # Carson's Desk
@@ -70,6 +70,8 @@ Read the Desk's database before writing anything.
   With Todoist, ticks go straight to Todoist and the page has no "All todos" view; there is nothing to carry back.
 - **The user's changes to their date book,** only when `calendar.app` is `datebook`. On the page's "All dates" view the user can add, change, and remove dates, and each change stamps the entry with `changed_at`. `_system/dates.md` is the record. Work exactly as for the list above, on the entries in `book`: find each line by the entry's `was` field (the day, time, and title Carson wrote at the last refresh); `removed: true` moves the line, unchanged, under a heading "Removed" at the end of the file with ` | removed YYYY-MM-DD` added, and the entry is then deleted from the page's database; `by: user` with no `was` is a new line; a `changed_at` later than the Desk's last `updated_at` means the line is changed to match the entry's day, time (the entry's `sort`), title, and place. With Google or Outlook the page has no "All dates" view.
 
+- **Goal taps,** only when `goals` is among the profile's `desk.sections`. `_system/goals.md` is the record (see the goals skill, `../goals/SKILL.md`). For each entry in `goal_log`: with `removed: true`, take the matching line (same goal and day) out of the Log if it is there, then delete the entry from the page's database; otherwise, if the Log has no line for it yet, add one (`YYYY-MM-DD | goal name`). Count entries, not days: two entries for one goal on one day are two lines. Entries dated before last Monday that are already in the record are deleted from the page's database.
+
 Mention in one line what was carried back ("I've added the two you approved, and noted the three changes you made to your list and the date you added"), when in a live conversation.
 
 ### Step 2: Rewrite the Desk
@@ -85,6 +87,10 @@ Write these, replacing what was there. Give each entry a stable id made from its
 | `waiting` | unanswered suggestion in `_system/pending.md` | `kind` (`todo` or `event`), `title`, `detail` ("Due by Tue, Dec 15"; for something another member offered, add "Offered by Pat"), `from`, `answer` (empty); for a todo, also `todo`: `title`, `short`, `due`, `project`, `who`, `from` |
 | `todos` | only when `todos.app` is `list`: every open todo, whatever its date, and each one done in the last 14 days. Nothing under "Removed" | `title`, `short`, `due` (YYYY-MM-DD or empty), `project`, `who`, `from`, `status` (`open` or `done`), `done_at`, and `was`: the `title` and `due` exactly as written now, so the line can be found again after the user edits the entry. Write no `changed_at`, `by`, or `removed`; those are the page's. Keep an entry's id the same from one refresh to the next, including ids the page made (they begin `u-`) |
 | `book` | only when `calendar.app` is `datebook`: every date in `_system/dates.md` dated today or later. Nothing under "Past," "Removed," "Moved to," or "Left here" | `day` (YYYY-MM-DD), `sort` ("14:30", or empty when there is no time), `time` ("2:30 pm", or empty), `title`, `short`, `where`, `from`, and `was`: the `day`, `sort`, and `title` exactly as written now. Write no `changed_at`, `by`, or `removed`. Keep an entry's id the same from one refresh to the next, including ids the page made (they begin `u-`). The page takes "Today and tomorrow" from these, so write no `events` |
+| `goals` | only when `goals` is among `desk.sections`: one per line under "Goals" in `_system/goals.md` | the document id is a short plain name for the goal that never changes ("cardio"); `name`, `target` (times a week, a number), `order` |
+| `goal_log` | only with goals: each Log line in `_system/goals.md` from this week | `goal` (the goal's document id), `day` (YYYY-MM-DD), `at` (the day again, or the time if known). Keep the ids of entries the page made (they begin `u-`); add entries only for Log lines the page does not already have. Write no `removed` or `by` |
+
+**Which sections show.** `desk/meta` also carries `sections`: the list in the profile's `desk.sections`. "To do" and "Waiting for your answer" always show and are not in the list. The choices are `events` (today and tomorrow), `dates` (coming renewals and expirations), `filed` (filed this week), and `goals` (this week's goals). If the profile has no `desk.sections`, write `["events", "dates", "filed"]`. Do not write the collections for a section the user has turned off. When the user says "I don't need … on my desk" or "add … to my desk," change `desk.sections` and refresh.
 
 Rules for what goes on the Desk:
 

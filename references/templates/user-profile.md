@@ -27,6 +27,7 @@ todos:
 desk:
   url: ""                 # the address of Carson's Desk; empty = not built yet
   template: ""            # the desk skill version whose page template is published
+  sections: [events, dates, filed]   # what the Desk shows besides todos and suggestions: events | dates | filed | goals
 
 money:
   on: false               # true once a budget has been set up
@@ -49,4 +50,5 @@ routines:
   evening: "off"          # "off", or the time the evening look back runs
   weekly: "off"           # "off", or the day the weekly check runs, e.g. "Sunday"
   hourly_mail: false      # true = check the inbox and the email drop box every hour
+  midweek: "off"          # "off", or the day and time of the midweek goals check, e.g. "Wednesday 17:30"
 ```

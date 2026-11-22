@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.14.0 — 2026-11-22
+
+- Desk: each person chooses which sections show. "To do" and "Waiting for your answer" always show; today and tomorrow, coming dates, filed this week, and goals are choices.
+- Weekly goals: a short list of things to do a set number of times a week, with a row of boxes on the Desk to tap. The brief and the review say where the week stands, and an optional midweek check speaks up only if a goal is behind.
+
 ## 0.13.0 — 2026-11-22
 
 - House procedures: a household can list routines of its own (a weekly money check-in, a quarterly review, special handling for one kind of paper) in a note, and Carson runs them: when asked by name, on a schedule, or when a matching file arrives in the inbox. A procedure can take the place of part of Carson, such as its budget.

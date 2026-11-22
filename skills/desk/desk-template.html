@@ -104,6 +104,15 @@ li.editing { display: block; }
 @media (max-width: 600px) { #book-list li:not(.editing) { flex-wrap: wrap; } #book-list .main { flex: 1 1 60%; }
   #all-list li:not(.editing), #todos li { flex-wrap: wrap; } #all-list label.row, #todos label.row { flex: 1 1 100%; } #all-list li .chip, #todos li .chip { margin-left: 44px; } }
 .warnline { color: var(--late); font-weight: 700; }
+#goals li { flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+#goals .gname { flex: 1 1 100%; font-weight: 700; }
+#goals .boxes { display: flex; flex-wrap: wrap; gap: 10px; }
+#goals .box { flex: none; width: 46px; min-width: 0; height: 46px; padding: 0; border-radius: 9px; border: 3px solid var(--accent); background: transparent; cursor: pointer; }
+#goals .box[aria-pressed="true"] { background: var(--accent); }
+#goals .gcount { flex: none; color: var(--muted); font-variant-numeric: tabular-nums; }
+.goalnote { margin: 12px 0 0; color: var(--muted); }
+.goalnote.met { color: var(--accent); font-weight: 700; }
+.grid.one { grid-template-columns: 1fr; }
 footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--line); padding-top: 16px; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 480px) { body { font-size: 18px; } .sample { margin-left: 0; } .when { width: 4.6em; } }
@@ -165,7 +174,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
   <div class="col" id="view-desk">
   <div class="summary" id="summary">Opening your desk…</div>
 
-  <div class="grid">
+  <div class="grid" id="desk-grid">
     <div class="col">
       <section aria-labelledby="h-todo" id="s-todo">
         <h2 id="h-todo">To do <span class="count" id="todo-count"></span></h2>
@@ -188,19 +197,26 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       </section>
     </div>
 
-    <div class="col">
-      <section aria-labelledby="h-today">
+    <div class="col" id="col-side">
+      <section aria-labelledby="h-goals" id="s-goals" hidden>
+        <h2 id="h-goals">This week's goals <span class="count" id="goals-count"></span></h2>
+        <p class="hint">Tap a box when you've done one. Tap a filled box to undo it.</p>
+        <ul id="goals"></ul>
+        <p class="goalnote" id="goals-note" role="status"></p>
+      </section>
+
+      <section aria-labelledby="h-today" id="s-today">
         <h2 id="h-today">Today and tomorrow</h2>
         <ul id="events"></ul>
       </section>
 
-      <section aria-labelledby="h-dates">
+      <section aria-labelledby="h-dates" id="s-dates">
         <h2 id="h-dates">Coming up</h2>
         <p class="hint">Renewals and expirations in the next 60 days.</p>
         <ul id="dates"></ul>
       </section>
 
-      <section aria-labelledby="h-filed">
+      <section aria-labelledby="h-filed" id="s-filed">
         <h2 id="h-filed">Filed this week <span class="count" id="filed-count"></span></h2>
         <ul id="filed"></ul>
       </section>
@@ -230,7 +246,7 @@ const fmtShort = d => d.toLocaleDateString(undefined, { month: "short", day: "nu
 const weekEnd = () => (7 - new Date().getDay()) % 7;
 const todayIso = () => { const d = today0(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
 
-const S = { meta: null, todos: [], all: [], events: [], dates: [], filed: [], waiting: [], book: [], todoNote: "", ready: false, view: "desk", editing: "", removing: "", dirty: false, dEditing: "", dRemoving: "" };
+const S = { meta: null, todos: [], all: [], events: [], dates: [], filed: [], waiting: [], book: [], goals: [], goalLog: [], todoNote: "", ready: false, view: "desk", editing: "", removing: "", dirty: false, dEditing: "", dRemoving: "" };
 let db = null, mcp = null, todoistWatch = null;
 
 function shortOf(t) { return t.short || String(t.title || "").split(",")[0].replace(/^(pay|call|book|sign and return|renew|gather|send|schedule)\s+/i, "").toLowerCase(); }
@@ -332,6 +348,61 @@ function renderWaiting() {
     '</li>').join("");
   const left = S.waiting.filter(w => !w.answer).length;
   el("wait-count").textContent = left ? left + (left === 1 ? " suggestion" : " suggestions") : "all answered";
+}
+
+// ---- which sections this person wants, and their weekly goals
+// "To do" and "Waiting for your answer" always show. The rest are the person's choice; with no choice recorded, everything but goals shows.
+function wants(key) {
+  const list = S.meta && Array.isArray(S.meta.sections) ? S.meta.sections : null;
+  return list ? list.includes(key) : key !== "goals";
+}
+function renderSections() {
+  [["goals", "s-goals"], ["events", "s-today"], ["dates", "s-dates"], ["filed", "s-filed"]].forEach(p => { el(p[1]).hidden = !wants(p[0]); });
+  const side = ["s-goals", "s-today", "s-dates", "s-filed"].some(id => !el(id).hidden);
+  el("col-side").hidden = !side;
+  el("desk-grid").classList.toggle("one", !side);
+}
+const localDay = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+// The week runs Monday to Sunday.
+function weekStart() { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return localDay(d); }
+function goalMarks(goalId) {
+  const from = weekStart();
+  return S.goalLog.filter(x => x.goal === goalId && x.removed !== true && typeof x.day === "string" && x.day >= from)
+    .sort((a, b) => String(a.at || a.day).localeCompare(String(b.at || b.day)));
+}
+function renderGoals() {
+  if (!wants("goals")) return;
+  const goals = S.goals.filter(g => g.name && Number(g.target) > 0).sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0) || String(a.name).localeCompare(String(b.name)));
+  let done = 0, total = 0;
+  el("goals").innerHTML = goals.length ? goals.map(g => {
+    const target = Math.min(14, Math.round(Number(g.target))), n = goalMarks(g.id).length;
+    done += Math.min(n, target); total += target;
+    let boxes = "";
+    for (let i = 0; i < target; i++) {
+      const on = i < n;
+      boxes += '<button type="button" class="box" data-goal="' + esc(g.id) + '" data-on="' + (on ? "1" : "0") + '" aria-pressed="' + on + '" aria-label="' + esc(g.name) + " " + (i + 1) + " of " + target + (on ? ", done. Tap to undo" : ", not done yet") + '"></button>';
+    }
+    return '<li><span class="gname">' + esc(g.name) + '</span><span class="boxes">' + boxes + '</span><span class="gcount">' + n + " of " + target + '</span></li>';
+  }).join("") : '<li class="empty">No goals yet. Tell Carson what you would like to do each week.</li>';
+  el("goals-count").textContent = total ? done + " of " + total : "";
+  const left = (7 - new Date().getDay()) % 7 + 1;
+  const note = el("goals-note");
+  const met = total > 0 && done >= total;
+  note.classList.toggle("met", met);
+  note.textContent = !total ? "" : met ? "All done for the week." : (total - done) + " to go. " + (left === 1 ? "Today is the last day of the week." : left + " days left this week, counting today.");
+}
+async function tapGoal(goalId, on) {
+  try {
+    if (on) {
+      const marks = goalMarks(goalId);
+      const last = marks[marks.length - 1];
+      // Marked as removed, not erased, so Carson can take it out of the record at its next refresh.
+      if (last) await db.doc("goal_log/" + last.id).update({ removed: true, changed_at: stamp() });
+    } else {
+      const id = "u-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      await db.doc("goal_log/" + id).set({ goal: goalId, day: localDay(new Date()), by: "user", at: stamp() });
+    }
+  } catch (e) { el("goals-note").textContent = "That couldn't be saved. Please try again in a moment."; }
 }
 
 function renderMeta() {
@@ -653,6 +724,7 @@ async function answer(id, a) {
 el("f-project").addEventListener("change", renderTodos);
 el("f-who").addEventListener("change", renderTodos);
 el("todos").addEventListener("change", e => { const id = e.target && e.target.dataset && e.target.dataset.id; if (id) tick(id, e.target.checked); });
+el("goals").addEventListener("click", e => { const b = e.target.closest("button[data-goal]"); if (b) tapGoal(b.dataset.goal, b.dataset.on === "1"); });
 el("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-view]"); if (b) showView(b.dataset.view); });
 el("book-add").addEventListener("submit", e => { e.preventDefault(); addDate(e.target); });
 el("book-list").addEventListener("submit", e => { e.preventDefault(); const f = e.target.closest("form[data-form]"); if (f) saveDate(f.dataset.form, f); });
@@ -689,7 +761,7 @@ el("today").textContent = new Date().toLocaleDateString(undefined, { weekday: "l
   if (!db) { el("summary").textContent = "Your desk can't be opened here. Open this page inside Claude while signed in."; return; }
   const slow = setTimeout(() => { if (!S.ready) el("summary").textContent = "Still fetching your desk. If this stays, check your connection."; }, 10000);
   const fail = () => { clearTimeout(slow); if (!S.ready) el("summary").textContent = "Your desk can't be reached right now. Please try again later."; };
-  let listSub = null, bookSub = null;
+  let listSub = null, bookSub = null, goalSub = null;
 
   db.doc("desk/meta").onSnapshot(async snap => {
     clearTimeout(slow);
@@ -704,8 +776,13 @@ el("today").textContent = new Date().toLocaleDateString(undefined, { weekday: "l
       listSub = db.collection("todos").onSnapshot(useListTodos, fail);
     }
     if (S.meta.calendar_app === "datebook" && !bookSub) bookSub = db.collection("book").onSnapshot(useBook, () => {});
-    renderTabs();
-    renderTodos(); renderEvents(); renderBook();
+    if (wants("goals") && !goalSub) {
+      goalSub = true;
+      db.collection("goals").onSnapshot(snap => { S.goals = snap.docs.map(d => Object.assign({ id: d.id }, d.data() || {})); renderGoals(); }, () => {});
+      db.collection("goal_log").onSnapshot(snap => { S.goalLog = snap.docs.map(d => Object.assign({ id: d.id }, d.data() || {})); renderGoals(); }, () => {});
+    }
+    renderTabs(); renderSections();
+    renderTodos(); renderEvents(); renderBook(); renderGoals();
   }, fail);
 
   const sub = (name, key, render) => db.collection(name).onSnapshot(snap => {
