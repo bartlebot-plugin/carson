@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.1 — 2026-11-25
+
+- Desk: Outlook calendars are read live as well, the same way as Google Calendar. Not yet tried by an Outlook user.
+
+## 0.15.0 — 2026-11-25
+
+- Desk: with Google Calendar, "Today and tomorrow" is read from the calendar itself each time the page is opened, and every few minutes while it is open. Before, it showed a copy from Carson's last refresh, which went stale between refreshes. If the calendar can't be read, the page shows Carson's last copy and says so.
+
 ## 0.14.3 — 2026-11-22
 
 - Desk: on a phone, where everything is in one column, "This week's goals" comes last, after today's events.

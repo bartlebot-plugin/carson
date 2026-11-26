@@ -8,7 +8,7 @@ description: >
   Desk: a private page showing today's appointments, todos to tick off,
   suggestions to answer, coming dates, and recently filed documents.
 metadata:
-  version: "0.14.3"
+  version: "0.15.1"
 ---
 
 # Carson's Desk
@@ -39,14 +39,15 @@ Replacing or removing entries in the Desk's database is not deleting anything of
 1. Publish `desk-template.html` from this skill's folder, exactly as it is, as a new private page titled "Carson's Desk".
 2. Set the page's capabilities:
    - always `db`, with default rules;
-   - when the profile's `todos.app` is `todoist`, also `mcp` for the Todoist connector, limited to the two tools `find-tasks` and `complete-tasks`, and a third, `find-activity`, when any weekly goal is tied to a Todoist task (the page reads that task's ticks with it). If a goal is tied later, set the page's capabilities again with all three before refreshing; the user may be asked once more to allow the page to use Todoist. Use the connector's display name exactly as it appears among the user's connectors.
+   - when the profile's `todos.app` is `todoist`, also `mcp` for the Todoist connector, limited to the two tools `find-tasks` and `complete-tasks`, and a third, `find-activity`, when any weekly goal is tied to a Todoist task (the page reads that task's ticks with it). If a goal is tied later, set the page's capabilities again with all three before refreshing; the user may be asked once more to allow the page to use Todoist. Use the connector's display name exactly as it appears among the user's connectors;
+   - when the profile's `calendar.app` is `google`, also `mcp` for the Google Calendar connector, limited to the one tool `list_events`; when it is `outlook`, also `mcp` for the Microsoft 365 connector, limited to the one tool `outlook_calendar_search`. The page reads today's and tomorrow's events from the calendar itself, so an event added an hour ago shows without a refresh. The page only reads; it never adds or changes an event.
 3. Record the page's address in the profile as `desk.url`.
 4. Refresh it (below), so it never opens empty.
 5. Tell the user, briefly: "Your desk is ready. You can open it any time to see what's on, tick things off, and answer my suggestions." Suggest they keep it handy in whatever way their Claude app offers (a pin or favorite); do not invent menu names.
 
 The page is private to the user. Never share it, publish it to the web, or change who can see it. If the user wants someone else to see it, sharing is theirs to do from the page.
 
-With Todoist, the first time the user opens the page on each device, Claude asks them to allow the page to use Todoist. Tell them to choose Allow. If the todos do not appear on one device when they do on another, the cure is usually to reload the page there once; say so before trying anything else.
+With Todoist, Google Calendar, or Outlook, the first time the user opens the page on each device, Claude asks them to allow the page to use each one. Tell them to choose Allow. If the todos do not appear on one device when they do on another, the cure is usually to reload the page there once; say so before trying anything else.
 
 ## Keeping the page itself up to date
 
@@ -80,8 +81,8 @@ Write these, replacing what was there. Give each entry a stable id made from its
 
 | Where | One entry per | Fields |
 |---|---|---|
-| `desk/meta` | (single) | `name` (what Carson calls the user), `todo_app`, `calendar_app`, `people` (names from the people list), `updated_at` (now, with the local time zone offset); with Todoist also `todoist_show` (`project`, `chosen`, or `all`, from the profile), `todoist_project_id`, when `chosen` also `todoist_projects` (a list of `id` and `name` for every project to show: each chosen project and, where the profile says so, its current sub-projects, looked up at this refresh; at most 20; the page shows tasks only when overdue or due through the coming Sunday, whatever project or list they come from), and `todoist_server` (the connector's display name) |
-| `events` | only when `calendar.app` is `google` or `outlook`: event today, tomorrow, or the day after | `day` (YYYY-MM-DD), `time` ("2:30 pm", or empty), `sort` ("14:30"), `title`, `short` (two or three words), `where` |
+| `desk/meta` | (single) | `name` (what Carson calls the user), `todo_app`, `calendar_app`, `people` (names from the people list), `updated_at` (now, with the local time zone offset); with Todoist also `todoist_show` (`project`, `chosen`, or `all`, from the profile), `todoist_project_id`, when `chosen` also `todoist_projects` (a list of `id` and `name` for every project to show: each chosen project and, where the profile says so, its current sub-projects, looked up at this refresh; at most 20; the page shows tasks only when overdue or due through the coming Sunday, whatever project or list they come from), and `todoist_server` (the connector's display name); with Google Calendar or Outlook also `calendar_server` (the connector's display name) and `calendar_ids` (a list of `id` and `name` for each calendar the page reads: the profile's `calendar.calendar_name` and, in a shared household, the settings' `shared_calendar`; at most 10). With Google, look each `id` up among the user's calendars at this refresh; if one cannot be found, leave that calendar out and say so. With Outlook, write `id` as an empty string and `name` as the calendar's name, or an empty `name` for the user's main calendar |
+| `events` | only when `calendar.app` is `google` or `outlook`: event today, tomorrow, or the day after. The page reads the calendar live and shows this copy only until the calendar answers, or when it cannot be read; write it all the same | `day` (YYYY-MM-DD), `time` ("2:30 pm", or empty), `sort` ("14:30"), `title`, `short` (two or three words), `where` |
 | `dates` | key date in the next 60 days | `day`, `what` |
 | `filed` | document filed in the last 7 days | `day`, `title` (what it was), `where` (folder words: "Home, Utilities") |
 | `waiting` | unanswered suggestion in `_system/pending.md` | `kind` (`todo` or `event`), `title`, `detail` ("Due by Tue, Dec 15"; for something another member offered, add "Offered by Pat"), `from`, `answer` (empty); for a todo, also `todo`: `title`, `short`, `due`, `project`, `who`, `from` |

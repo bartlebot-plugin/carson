@@ -210,6 +210,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <section aria-labelledby="h-today" id="s-today">
         <h2 id="h-today">Today and tomorrow</h2>
         <ul id="events"></ul>
+        <p class="goalnote" id="events-note" role="status"></p>
       </section>
 
       <section aria-labelledby="h-dates" id="s-dates">
@@ -248,7 +249,7 @@ const fmtShort = d => d.toLocaleDateString(undefined, { month: "short", day: "nu
 const weekEnd = () => (7 - new Date().getDay()) % 7;
 const todayIso = () => { const d = today0(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
 
-const S = { meta: null, todos: [], all: [], events: [], dates: [], filed: [], waiting: [], book: [], goals: [], goalLog: [], goalDone: {}, goalNote: "", todoNote: "", ready: false, view: "desk", editing: "", removing: "", dirty: false, dEditing: "", dRemoving: "" };
+const S = { meta: null, todos: [], all: [], events: [], dates: [], filed: [], waiting: [], book: [], goals: [], goalLog: [], goalDone: {}, goalNote: "", todoNote: "", live: null, calNote: "", ready: false, view: "desk", editing: "", removing: "", dirty: false, dEditing: "", dRemoving: "" };
 let db = null, mcp = null, todoistWatch = null;
 
 function shortOf(t) { return t.short || String(t.title || "").split(",")[0].replace(/^(pay|call|book|sign and return|renew|gather|send|schedule)\s+/i, "").toLowerCase(); }
@@ -305,7 +306,8 @@ function renderSummary() {
 }
 
 // With Carson's own date book, today's and tomorrow's events are read from the book, so a date added on this page shows at once.
-const eventSource = () => (S.meta && S.meta.calendar_app === "datebook") ? S.book : S.events;
+// With Google Calendar or Outlook the page reads the calendar itself (S.live); until it answers, or if it can't, the copy Carson wrote at the last refresh is shown.
+const eventSource = () => (S.meta && S.meta.calendar_app === "datebook") ? S.book : (S.live || S.events);
 function renderEvents() {
   const rows = eventSource().map(e => ({ e, d: dayDiff(e.day) })).filter(x => x.d === 0 || x.d === 1)
     .sort((a, b) => a.d - b.d || String(a.e.sort || a.e.time || "").localeCompare(String(b.e.sort || b.e.time || "")));
@@ -313,6 +315,7 @@ function renderEvents() {
     '<li><span class="when">' + (d === 0 ? "Today" : "Tomorrow") + (e.time ? '<br>' + esc(e.time) : "") + '</span>' +
     '<span class="main"><span class="title">' + esc(e.title) + '</span>' + (e.where ? '<span class="meta"><span>' + esc(e.where) + '</span></span>' : "") + '</span></li>').join("")
     : '<li class="empty">Nothing on the calendar.</li>';
+  el("events-note").textContent = S.calNote || "";
   renderSummary();
 }
 
@@ -671,6 +674,127 @@ function mcpMessage(e) {
 }
 // A short technical note, so a problem can be reported exactly.
 function detail(e) { const c = e && (e.code || e.name || e.message); return c ? " (Detail: " + String(c).slice(0, 80) + ")" : ""; }
+// Google Calendar or Outlook, read live: today and tomorrow from each calendar Carson named in desk/meta.
+let calWatches = null, calDay = "";
+const liveCalendar = () => !!S.meta && (S.meta.calendar_app === "google" || S.meta.calendar_app === "outlook") && Array.isArray(S.meta.calendar_ids) && S.meta.calendar_ids.length > 0;
+const isoLocal = d => localDay(d) + "T00:00:00";
+function calPayload(p) {
+  if (typeof p === "string") { try { p = JSON.parse(p); } catch (e) { return null; } }
+  if (p && !Array.isArray(p.events) && Array.isArray(p.content)) { const t = p.content.find(c => c && typeof c.text === "string"); if (t) { try { p = JSON.parse(t.text); } catch (e) { return null; } } }
+  return p && Array.isArray(p.events) ? p.events : null;
+}
+function calRows(events) {
+  const out = [], t0 = today0(), days = [0, 1].map(n => localDay(new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + n)));
+  events.forEach(e => {
+    if (!e || e.status === "cancelled" || !e.start) return;
+    const title = String(e.summary || "(No title)"), where = String(e.location || "");
+    if (e.start.date) {
+      // All day. The end date is the day after the last day.
+      const from = String(e.start.date).slice(0, 10), to = String((e.end && e.end.date) || "").slice(0, 10);
+      days.forEach(d => { if (d >= from && (to ? d < to : d === from)) out.push({ day: d, sort: "", time: "", title, short: title, where }); });
+    } else if (e.start.dateTime) {
+      const st = new Date(e.start.dateTime), en = e.end && e.end.dateTime ? new Date(e.end.dateTime) : st;
+      if (isNaN(st)) return;
+      const day = localDay(st);
+      const sort = String(st.getHours()).padStart(2, "0") + ":" + String(st.getMinutes()).padStart(2, "0");
+      if (days.includes(day)) out.push({ day, sort, time: fmtTime(sort), title, short: title, where });
+      else if (day < days[0] && en > t0) out.push({ day: days[0], sort: "", time: "", title, short: title, where });
+    }
+  });
+  return out;
+}
+// Outlook answers with one object per event (subject, start, end, isAllDay) and a closing count. The shape it reaches the page in
+// isn't fixed, so events are looked for wherever they are. Returns null when the answer can't be understood.
+function outlookEvents(p) {
+  const out = []; let known = false;
+  const walk = (v, depth) => {
+    if (v == null || depth > 6) return;
+    if (typeof v === "string") {
+      const t = v.trim(); if (!t || (t[0] !== "{" && t[0] !== "[")) return;
+      try { walk(JSON.parse(t), depth + 1); return; } catch (e) {}
+      t.split(/\n+(?=\{)|(?<=\})\s*(?=\{"(?:uri|totalResultCount|nextOffset)")/).forEach(part => { try { walk(JSON.parse(part), depth + 1); } catch (e) {} });
+      return;
+    }
+    if (Array.isArray(v)) { known = true; v.forEach(x => walk(x, depth + 1)); return; }
+    if (typeof v !== "object") return;
+    if (v.start && typeof v.subject !== "undefined") { known = true; out.push(v); return; }
+    if (typeof v.totalResultCount !== "undefined" || typeof v.nextOffset !== "undefined") { known = true; return; }
+    ["content", "events", "value", "results", "items", "text"].forEach(k => { if (typeof v[k] !== "undefined") walk(v[k], depth + 1); });
+  };
+  walk(p, 0);
+  return known ? out : null;
+}
+// Outlook gives a wall-clock time and the zone it is in: UTC, or the mailbox's own zone, which is taken to be the viewer's.
+function outlookTime(x) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String((x && x.dateTime) || "")); if (!m) return null;
+  const n = m.slice(1).map(Number);
+  return /^(utc|z|gmt)$/i.test(String(x.timeZone || "")) ? new Date(Date.UTC(n[0], n[1] - 1, n[2], n[3], n[4])) : new Date(n[0], n[1] - 1, n[2], n[3], n[4]);
+}
+function outlookRows(events) {
+  return calRows(events.map(e => {
+    if (!e || e.isCancelled === true) return null;
+    const base = { summary: e.subject, location: typeof e.location === "string" ? e.location : "" };
+    // An all-day event's date is its own; it is never moved through a time zone.
+    if (e.isAllDay === true) return Object.assign(base, { start: { date: String(e.start.dateTime || "").slice(0, 10) }, end: { date: String((e.end && e.end.dateTime) || "").slice(0, 10) } });
+    const st = outlookTime(e.start), en = outlookTime(e.end);
+    return st ? Object.assign(base, { start: { dateTime: st.toISOString() }, end: { dateTime: (en || st).toISOString() } }) : null;
+  }));
+}
+function calMessage(e) {
+  const c = e && e.code;
+  const name = S.meta && S.meta.calendar_app === "outlook" ? "Outlook" : "Google Calendar";
+  if (c === "needs_reauth") return "Your " + name + " connection needs renewing. Reconnect it in Claude's settings.";
+  if (c === "server_not_connected" || c === "selection_required") return name + " isn't connected for this page. Add it in Claude's settings.";
+  if (c === "not_in_manifest" || c === "approval_required" || c === "consent_required" || c === "blocked_by_policy") return "This page isn't allowed to read your calendar yet. Reload the page and choose Allow.";
+  return "Your calendar can't be read right now." + detail(e);
+}
+function startCalendar() {
+  if (!mcp || !S.meta || !liveCalendar()) return;
+  const outlook = S.meta.calendar_app === "outlook";
+  const cals = S.meta.calendar_ids.filter(c => c && (c.id || outlook)).slice(0, 10);
+  if (!cals.length) return;
+  // Start once a day: the window read is today and tomorrow, so a page left open over midnight asks again.
+  if (calWatches && calDay === todayIso()) return;
+  if (calWatches) calWatches.forEach(u => { try { if (typeof u === "function") u(); else if (u && typeof u.unsubscribe === "function") u.unsubscribe(); } catch (e) {} });
+  calDay = todayIso();
+  const server = S.meta.calendar_server || (outlook ? "Microsoft 365" : "Google Calendar");
+  const t0 = today0(), end = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + 2);
+  const sets = {}, bad = {}, day = calDay;
+  const merge = () => {
+    if (day !== calDay) return;
+    const keys = Object.keys(sets);
+    const copy = S.meta.updated_at ? " Showing Carson's copy from " + fmtDay(new Date(S.meta.updated_at)) + "." : "";
+    if (!keys.length) { S.live = null; const k = Object.keys(bad)[0]; S.calNote = k ? calMessage(bad[k]) + copy : ""; renderEvents(); return; }
+    const seen = new Set(), out = [];
+    keys.forEach(k => sets[k].forEach(r => { const id = r.day + "|" + r.sort + "|" + r.title; if (!seen.has(id)) { seen.add(id); out.push(r); } }));
+    S.live = out;
+    const k = Object.keys(bad).find(x => !sets[x]);
+    S.calNote = k ? "One calendar couldn't be read. " + calMessage(bad[k]) : "";
+    renderEvents();
+  };
+  // Outlook: a little wider than the two days, so no zone's all-day events are missed; the rows are then kept by their own day.
+  const input = c => {
+    if (!outlook) return { calendarId: String(c.id), startTime: isoLocal(t0), endTime: isoLocal(end), orderBy: "startTime", pageSize: 50 };
+    const inp = { query: "*", afterDateTime: new Date(t0.getTime() - 12 * 3600000).toISOString(), beforeDateTime: new Date(end.getTime() + 14 * 3600000).toISOString(), order: "oldest", limit: 25 };
+    if (c.name) inp.calendarName = String(c.name);
+    return inp;
+  };
+  calWatches = cals.map((c, i) => mcp.watchTool(server, outlook ? "outlook_calendar_search" : "list_events", input(c), ev => {
+    const key = String(c.id || c.name || i);
+    if (ev.type === "error") {
+      bad[key] = ev.error || {};
+      const code = ev.error && ev.error.code;
+      if (["needs_reauth", "server_not_connected", "blocked_by_policy", "approval_required", "not_in_manifest"].includes(code)) delete sets[key];
+      merge(); return;
+    }
+    const pay = ev.result && ev.result.payload;
+    const events = outlook ? outlookEvents(pay) : calPayload(pay);
+    if (!events) { bad[key] = { code: "unreadable answer" }; merge(); return; }
+    delete bad[key]; sets[key] = outlook ? outlookRows(events) : calRows(events); merge();
+  }, { refetchInterval: 300000 }));
+}
+setInterval(() => { try { if (calWatches && calDay !== todayIso()) { startCalendar(); renderEvents(); renderTodos(); } } catch (e) {} }, 600000);
+
 function startTodoist() {
   if (todoistWatch || !mcp || !S.meta) return;
   const server = S.meta.todoist_server || "Todoist";
@@ -792,9 +916,11 @@ el("today").textContent = new Date().toLocaleDateString(undefined, { weekday: "l
     clearTimeout(slow);
     if (!snap.exists) { S.ready = false; el("summary").textContent = "Carson hasn't filled in your desk yet. Tell Carson: refresh my desk."; return; }
     S.meta = snap.data(); S.ready = true; renderMeta();
+    const liveCal = liveCalendar();
+    let why = null;
+    if (!mcp && (S.meta.todo_app === "todoist" || liveCal)) { try { mcp = await window.claude.use("mcp"); } catch (e) { mcp = null; why = e; } }
+    if (liveCal && mcp) { try { startCalendar(); } catch (e) {} }
     if (S.meta.todo_app === "todoist") {
-      let why = null;
-      if (!mcp) { try { mcp = await window.claude.use("mcp"); } catch (e) { mcp = null; why = e; } }
       if (mcp) { try { startTodoist(); } catch (e) { S.todoNote = "Your Todoist tasks can't be shown in this view." + detail(e); } try { watchGoalTasks(); } catch (e) {} }
       else { S.todoNote = "Your Todoist tasks can't be shown in this view." + (detail(why) || " (Detail: connectors unavailable)"); }
     } else if (S.meta.todo_app === "list" && !listSub) {
