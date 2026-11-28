@@ -8,7 +8,7 @@ You hand Carson a document: a bill, a letter, an insurance policy, a photo of so
 
 Carson is built for people who are comfortable with email and a web browser and not much else. It asks one question at a time, in plain words.
 
-**Status: early test build (0.15.1).** This version covers setup, filing, the daily and weekly routines, Carson's Desk, a household budget, papers kept either in Google Drive or in a folder on a computer, papers you already had, shared households, and house procedures. It has been tested by its author only; the newest parts have not yet been tried by other people. Expect rough edges.
+**Status (version 0.15.2).** Carson covers setup, filing, the daily and weekly routines, Carson's Desk, a household budget, papers kept either in Google Drive or in a folder on a computer, papers you already had, shared households, and house procedures. Its author uses it every day. The newest parts (shared households, bringing in old papers, and live Outlook calendar reading) have not yet been tried by other people.
 
 ## What Carson does
 
@@ -63,9 +63,11 @@ Carson has no server and no account of its own. It sends nothing to its author. 
 
 The only personal information the author ever holds is an email address you choose to share by writing for support. It is used to answer you and, if you ask, to tell you about updates. It is never used for marketing and never shared.
 
+The full notice is at [bartlebot.com/carson/privacy.html](https://bartlebot.com/carson/privacy.html).
+
 ## How it is built
 
-Carson is a set of plain-text instructions (skills), note templates, two web page templates (Carson's Desk and Carson's Budget), and one short program, `budget.py`, that does the budget arithmetic. The program reads your two budget files and writes one file of results; it uses no network and changes nothing else. Carson includes no servers and no hidden instructions; every file is readable. Each page keeps its data in a private database attached to that page in your own Claude account. If you use the budget, that includes your spending figures and, unless you choose totals only, your individual purchases. The Desk reads your Todoist tasks only if you use Todoist and allow it.
+Carson is a set of plain-text instructions (skills), note templates, two web page templates (Carson's Desk and Carson's Budget), and one short program, `budget.py`, that does the budget arithmetic. The program reads your two budget files and writes one file of results; it uses no network and changes nothing else. Carson includes no servers and no hidden instructions; every file is readable. Each page keeps its data in a private database attached to that page in your own Claude account. If you use the budget, that includes your spending figures and, unless you choose totals only, your individual purchases. The Desk reads your Todoist tasks, and today's and tomorrow's events from Google Calendar or Outlook, only if you use them and allow it. It reads the calendar and never changes it.
 
 | Skill | Purpose |
 |---|---|

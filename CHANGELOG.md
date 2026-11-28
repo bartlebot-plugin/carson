@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.2 — 2026-11-28
+
+- No longer described as an early test build.
+- A privacy notice, at bartlebot.com/carson/privacy.html, linked from the README.
+- The packaged `carson.plugin` file is no longer kept in this repository; download it from bartlebot.com/carson/.
+
 ## 0.15.1 — 2026-11-25
 
 - Desk: Outlook calendars are read live as well, the same way as Google Calendar. Not yet tried by an Outlook user.

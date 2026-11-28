@@ -1,7 +1,7 @@
 {
   "name": "carson",
-  "version": "0.15.1",
-  "description": "A household filing and admin assistant for people who would rather not think about paperwork. Carson files your documents in a folder on your computer, keeps short notes on what matters, suggests todos and calendar events, and briefs you each morning. Early test build.",
+  "version": "0.15.2",
+  "description": "A household filing and admin assistant for people who would rather not think about paperwork. Carson files your documents in a folder on your computer, keeps short notes on what matters, suggests todos and calendar events, and briefs you each morning.",
   "author": {
     "name": "Amy E. Tabor",
     "email": "hello@bartlebot.com"

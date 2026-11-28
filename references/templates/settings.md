@@ -6,7 +6,7 @@ To change anything, say "set up Carson" and Carson will walk you through it.
 
 ```yaml
 carson:
-  version: "0.15.1"        # the Carson version that wrote this file
+  version: "0.15.2"        # the Carson version that wrote this file
   set_up_on: ""           # date setup finished (YYYY-MM-DD)
   setup_step: 0           # last setup step finished; lets setup resume
   stopped_on: ""          # date the user paused or stopped Carson; empty while Carson is in use
